@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eef2f6">
+  <title>Ürünler</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app">
+
+<section id="screen-urun" class="screen">
+  <!-- Kaydırırken sabit kalan başlık: sayfa başlığı + kategori sekmeleri -->
+  <div class="sticky-head">
+    <div class="tanim-head">
+      <h1 class="tanim-title">ÜRÜNLER</h1>
+      <div class="tabs" id="tabs" role="tablist"></div>
+    </div>
+  </div>
+
+  <main class="tanim">
+    <div class="tab-panel">
+      <p id="tab-empty" class="tab-empty">Henüz kategori yok. Yeni kategori eklemek için en baştaki <b>+</b> sekmesine dokunun.</p>
+      <div id="tab-body" hidden>
+        <div class="def-bar">
+          <span class="def-lbl">Ürünler</span>
+          <button type="button" id="urun-add" class="btn primary">Ürün Ekle</button>
+        </div>
+        <div class="def-table">
+          <table class="grid sel def">
+            <thead><tr><th>Ürünler</th><th class="act"></th></tr></thead>
+            <tbody id="urun-body"></tbody>
+          </table>
+        </div>
+        <p class="hint">Bir ürünü düzenlemek için üzerine çift tıklayın (telefonda çift dokunun).</p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<div id="modal-root"></div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "urunler", "runtimeExecutable": "node", "runtimeArgs": ["scripts/serve.mjs", "www", "5185"], "port": 5185 }
+  ]
+}
