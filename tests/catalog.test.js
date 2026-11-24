@@ -37,6 +37,16 @@ test('ürünler baştaki sayıya, sonra alfabeye göre sıralanır', () => {
   assert.deepEqual(C.sortedUrunler(k).map((u) => u.ad), ['45 Ah', '60 Ah', '100 Ah', 'Bant', 'Çanta']);
 });
 
+test('ürün kayıt sırasında yukarı/aşağı taşınır, sınırı aşmaz', () => {
+  const k = { id: 'k', ad: 'Binek', urunler: [] };
+  const [a, b, c] = ['Ccc', 'Aaa', 'Bbb'].map((ad) => C.saveUrun(k, { ad }).id);
+  assert.equal(C.moveUrun(k, a, -1), false);
+  assert.equal(C.moveUrun(k, c, +1), false);
+  assert.equal(C.moveUrun(k, c, -1), true);
+  assert.deepEqual(k.urunler.map((u) => u.id), [a, c, b]);
+  assert.deepEqual(C.sortedUrunler(k).map((u) => u.ad), ['Aaa', 'Bbb', 'Ccc']); // ada göre etkilenmez
+});
+
 test('ürünü olan kategori silinemez', () => {
   const cat = C.emptyCatalog();
   const id = C.addKategori(cat, 'Binek').id;

@@ -91,7 +91,18 @@ const num = (s) => {
 /** Baştaki sayı varsa sayısal (45 Ah, 60 Ah, 100 Ah), yoksa alfabetik. */
 const byAd = (a, b) => num(a.ad) - num(b.ad) || a.ad.localeCompare(b.ad, 'tr');
 
+/** Ada göre sıralı kopya (kayıt sırası k.urunler dizisinin kendi sırasıdır). */
 export const sortedUrunler = (k) => [...k.urunler].sort(byAd);
+
+/** Kayıt sırasında ürünü taşır. dir: -1 yukarı, +1 aşağı. Sınırda false döner. */
+export function moveUrun(k, id, dir) {
+  const list = k.urunler;
+  const i = list.findIndex((u) => u.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return false;
+  [list[i], list[j]] = [list[j], list[i]];
+  return true;
+}
 export const findUrun = (k, id) => k.urunler.find((u) => u.id === id) || null;
 
 /** Ürün ekler (id yoksa) ya da günceller. data: { ad } */

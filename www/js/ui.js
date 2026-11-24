@@ -15,6 +15,8 @@ export const icon = {
   plus: svg('<path d="M12 5v14M5 12h14"/>'),
   left: svg('<path d="M15 5l-7 7 7 7"/>'),
   right: svg('<path d="M9 5l7 7-7 7"/>'),
+  up: svg('<path d="M5 15l7-7 7 7"/>'),
+  down: svg('<path d="M5 9l7 7 7-7"/>'),
   edit: svg('<path d="M4 20h4L19 9l-4-4L4 16v4z" stroke-width="2.2"/><path d="M13.5 6.5l4 4" stroke-width="2.2"/>'),
   x: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
 };

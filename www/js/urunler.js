@@ -14,6 +14,8 @@ export function initUrunler({ catalog, save }) {
   let activeId = null; // aktif kategori
   let addPending = false; // + sekmesine basıldı, pencere açık
   let selUrun = null;
+  let sira = 'kayit'; // 'kayit': kayıt sırası (taşınabilir), 'ad': ada göre (taşınamaz)
+  const siraEl = $('#sirala');
 
   const activeKat = () => C.findKategori(catalog, activeId);
 
@@ -141,15 +143,24 @@ export function initUrunler({ catalog, save }) {
 
   // ---------- Ürünler tablosu ----------
 
-  function delButton(label) {
+  function rowButton(act, html, label, { cls = '', disabled = false } = {}) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'icon-btn del';
-    b.dataset.del = '1';
-    b.innerHTML = icon.x;
+    b.className = `icon-btn ${cls}`.trim();
+    b.dataset.row = act;
+    b.innerHTML = html;
     b.title = label;
     b.setAttribute('aria-label', label);
+    b.disabled = disabled;
     return b;
+  }
+
+  function renderSira() {
+    for (const b of siraEl.querySelectorAll('[data-sira]')) {
+      const on = b.dataset.sira === sira;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-checked', String(on));
+    }
   }
 
   function renderBody() {
@@ -157,9 +168,10 @@ export function initUrunler({ catalog, save }) {
     bodyEl.hidden = !k;
     emptyEl.hidden = !!k;
     if (!k) return;
+    renderSira();
 
     urunBody.replaceChildren();
-    const rows = C.sortedUrunler(k);
+    const rows = sira === 'ad' ? C.sortedUrunler(k) : k.urunler;
     if (!rows.length) {
       const td = urunBody.insertRow().insertCell();
       td.colSpan = 2;
@@ -167,15 +179,40 @@ export function initUrunler({ catalog, save }) {
       td.textContent = 'Ürün yok. Eklemek için Ürün Ekle butonunu kullanın.';
       return;
     }
-    for (const u of rows) {
+    rows.forEach((u, i) => {
       const tr = urunBody.insertRow();
       tr.dataset.id = u.id;
-      if (u.id === selUrun) tr.classList.add('selected');
       tr.insertCell().textContent = u.ad;
       const td = tr.insertCell();
       td.className = 'act';
-      td.append(delButton('Ürünü sil'));
-    }
+      if (u.id === selUrun) {
+        tr.classList.add('selected');
+        // Taşıma yalnız kayıt sırasındayken ve yalnız aktif satırda
+        if (sira === 'kayit') {
+          td.append(
+            rowButton('up', icon.up, 'Yukarı taşı', { disabled: i === 0 }),
+            rowButton('down', icon.down, 'Aşağı taşı', { disabled: i === rows.length - 1 }),
+          );
+        }
+      }
+      td.append(rowButton('del', icon.x, 'Ürünü sil', { cls: 'del' }));
+    });
+  }
+
+  siraEl.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sira]');
+    if (!b || b.dataset.sira === sira) return;
+    sira = b.dataset.sira;
+    renderBody();
+  });
+
+  function moveUrun(id, dir) {
+    const k = activeKat();
+    if (sira !== 'kayit' || !C.moveUrun(k, id, dir)) return;
+    save();
+    renderBody();
+    const tr = urunBody.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
+    if (tr) tr.scrollIntoView({ block: 'nearest' });
   }
 
   // Tıklama: seç; aynı satıra kısa sürede ikinci tıklama (çift tıklama / çift dokunma): düzenle.
@@ -184,8 +221,14 @@ export function initUrunler({ catalog, save }) {
     const tr = e.target.closest('tr[data-id]');
     if (!tr) return;
     const id = tr.dataset.id;
+    const btn = e.target.closest('[data-row]');
+    if (btn) {
+      last = { id: null, t: 0 };
+      if (btn.dataset.row === 'del') { select(id); deleteUrun(id); }
+      else moveUrun(id, btn.dataset.row === 'up' ? -1 : +1);
+      return;
+    }
     select(id);
-    if (e.target.closest('[data-del]')) { deleteUrun(id); return; }
     const now = Date.now();
     const dbl = last.id === id && now - last.t < 450;
     last = dbl ? { id: null, t: 0 } : { id, t: now };
@@ -193,8 +236,9 @@ export function initUrunler({ catalog, save }) {
   });
 
   function select(id) {
+    if (selUrun === id) return;
     selUrun = id;
-    for (const tr of urunBody.rows) tr.classList.toggle('selected', tr.dataset.id === id);
+    renderBody(); // taşıma butonları yalnız aktif satırda
   }
 
   async function deleteUrun(id) {
