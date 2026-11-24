@@ -58,6 +58,8 @@ button, .tab, .grid.sel { -webkit-user-select: none; user-select: none; -webkit-
 }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 .btn.danger { background: var(--red); border-color: var(--red); color: #fff; }
+/* Markalar'daki arşiv ekranıyla aynı: beyaz zemin, kırmızı kenar ve yazı */
+.btn.danger-outline { background: #fff; border-color: #c62828; color: #c62828; }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn:not(:disabled):active { filter: brightness(.88); }
 .xlbtn { display: inline-flex; align-items: center; gap: 6px; }
