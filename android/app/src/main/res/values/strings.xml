@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ürünler</string>
+    <string name="title_activity_main">Ürünler</string>
+    <string name="package_name">com.babamaku.urunler</string>
+    <string name="custom_url_scheme">com.babamaku.urunler</string>
+</resources>

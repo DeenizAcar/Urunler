@@ -1,0 +1,6 @@
+{
+  "appId": "com.babamaku.urunler",
+  "appName": "Ürünler",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}

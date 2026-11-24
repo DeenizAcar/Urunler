@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ürünler – Android</title>
+<style>
+  :root { --navy:#1d3557; --accent:#1e6fd9; --bg:#eef2f6; --text:#17202a; --muted:#5f6b78; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui, Roboto, "Segoe UI", sans-serif; }
+  main { max-width:460px; margin:0 auto; padding:32px 20px; text-align:center; }
+  img { width:96px; height:96px; border-radius:22px; }
+  h1 { margin:12px 0 4px; font-size:26px; }
+  .sub { color:var(--muted); margin:0 0 24px; }
+  .btn { display:block; background:var(--accent); color:#fff; text-decoration:none; font-weight:700; font-size:18px; padding:16px; border-radius:12px; }
+  ol { text-align:left; background:#fff; border-radius:12px; padding:16px 16px 16px 36px; margin:24px 0 12px; }
+  li { margin:6px 0; }
+  .meta { color:var(--muted); font-size:13px; }
+  a.web { color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <img src="icon.png" alt="">
+  <h1>Ürünler</h1>
+  <p class="sub" id="status">Android uygulaması indiriliyor…</p>
+  <a class="btn" id="dl" href="Urunler.apk" download="Urunler.apk">APK'yı İndir</a>
+  <ol>
+    <li>İndirme bitince bildirimden veya <b>İndirilenler</b> klasöründen <b>Urunler.apk</b> dosyasına dokunun.</li>
+    <li>"Bilinmeyen uygulamalar" uyarısı çıkarsa <b>Ayarlar → Bu kaynağa izin ver</b> seçeneğini açın.</li>
+    <li><b>Yükle</b>'ye dokunun. Güncelleme için aynı adımları tekrarlayın, ürünleriniz silinmez.</li>
+  </ol>
+  <p class="meta">Sürüm 1.0.0 · Android 7 ve üzeri</p>
+  <p><a class="web" id="web" href="../">Web sürümünü aç</a></p>
+</main>
+<script>
+  // /apk ve /apk/ adreslerinin ikisinde de doğru çalışsın
+  var base = location.pathname.replace(/\/?$/, '/');
+  var url = base + 'Urunler.apk';
+  document.getElementById('dl').href = url;
+  document.querySelector('img').src = base + 'icon.png';
+  document.getElementById('web').href = base.replace(/apk\/$/, '');
+  setTimeout(function () { location.href = url; document.getElementById('status').textContent = 'İndirme başlamazsa butona dokunun.'; }, 700);
+</script>
+</body>
+</html>

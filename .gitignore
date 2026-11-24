@@ -1,2 +1,7 @@
 node_modules/
 *.log
+dist/
+android/app/build/
+android/build/
+android/.gradle/
+keystore/
