@@ -19,6 +19,7 @@ export function initArsiv({ arsiv, saveArsiv, onClose }) {
       td.textContent = 'Arşivde silinen ürün kaydı bulunmuyor.';
       return;
     }
+    if (!list.some((a) => a.id === selId)) selId = list[0].id; // ilk satır seçili gelir
     for (const a of list) {
       const tr = body.insertRow();
       tr.dataset.id = a.id;

@@ -166,6 +166,8 @@ export function initUrunler({ catalog, arsiv, save, saveArsiv }) {
       td.textContent = 'Ürün yok. Eklemek için Ürün Ekle butonunu kullanın.';
       return;
     }
+    // Seçili satır yoksa (açılış, sekme değişimi, silme sonrası) ilk satır seçili gelir
+    if (!rows.some((u) => u.id === selUrun)) selUrun = rows[0].id;
     rows.forEach((u, i) => {
       const tr = urunBody.insertRow();
       tr.dataset.id = u.id;

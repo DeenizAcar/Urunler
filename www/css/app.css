@@ -159,9 +159,11 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
 .grid td { height: 30px; padding: 0 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .grid td.empty { height: 60px; color: var(--muted); text-align: center; white-space: normal; }
 .grid.sel tbody tr[data-id] { cursor: pointer; }
-.grid.sel tbody tr[data-id]:hover td { background: #f3f7fc; }
-.grid.sel tr.selected td,
-.grid.sel tr.selected:hover td { background: var(--sel-bg); font-weight: 700; }
+/* Üzerine gelme rengi yalnız farede; seçili satırın sarısını hiçbir durumda ezmez */
+@media (hover: hover) {
+  .grid.sel tbody tr[data-id]:not(.selected):hover td { background: #f3f7fc; }
+}
+.grid.sel tbody tr.selected td { background: var(--sel-bg); font-weight: 700; }
 .grid.def th.act, .grid.def td.act { width: 100px; padding: 0 4px; text-align: right; }
 .c-zaman { width: 140px; }
 .kat { font-weight: 400; font-style: italic; color: #4a5562; }
