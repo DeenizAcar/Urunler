@@ -27,16 +27,17 @@
     <div id="tab-body" class="def-table" hidden>
       <table class="grid sel def">
         <thead><tr>
-          <th>
+          <th colspan="2">
             <div class="th-flex">
               <span>Ürünler</span>
+              <span class="th-spacer"></span>
+              <span class="seg-lbl">Sıralama :</span>
               <div class="seg" id="sirala" role="radiogroup" aria-label="Sıralama">
                 <button type="button" class="seg-btn" data-sira="kayit" role="radio" data-tip="Eklenme sırası; yukarı / aşağı taşınabilir">Kayıt Sırasına Göre</button>
                 <button type="button" class="seg-btn" data-sira="ad" role="radio" data-tip="Ada göre sıralı; taşıma yapılamaz">Ada Göre</button>
               </div>
             </div>
           </th>
-          <th class="act"></th>
         </tr></thead>
         <tbody id="urun-body"></tbody>
       </table>
