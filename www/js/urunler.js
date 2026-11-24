@@ -1,47 +1,44 @@
 // Ürünler ekranı: kategori sekmeleri ve her kategorinin Ürünler tablosu.
 import * as C from './catalog.js';
-import { formDialog, confirmDialog, alertDialog, icon, esc } from './ui.js';
+import { formDialog, confirmDialog, alertDialog, icon, esc, onLongPress, toast } from './ui.js';
 
 const $ = (sel) => document.querySelector(sel);
 
-export function initUrunler({ catalog, save }) {
+export function initUrunler({ catalog, arsiv, save, saveArsiv }) {
   const tabsEl = $('#tabs');
   const bodyEl = $('#tab-body');
   const emptyEl = $('#tab-empty');
   const urunBody = $('#urun-body');
   const urunAdd = $('#urun-add');
+  const siraEl = $('#sirala');
 
   let activeId = null; // aktif kategori
   let addPending = false; // + sekmesine basıldı, pencere açık
   let selUrun = null;
   let sira = 'kayit'; // 'kayit': kayıt sırası (taşınabilir), 'ad': ada göre (taşınamaz)
-  const siraEl = $('#sirala');
 
   const activeKat = () => C.findKategori(catalog, activeId);
 
-  // ---------- Sekmeler ----------
-
-  function tabButton(act, html, label, { disabled = false } = {}) {
+  /** Simge butonu; ipucu basılı tutunca (farede üzerine gelince) görünür. */
+  function iconButton(cls, act, html, tip, { disabled = false } = {}) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'tab-act';
+    b.className = cls;
     b.dataset.act = act;
     b.innerHTML = html;
-    b.title = label;
-    b.setAttribute('aria-label', label);
+    b.dataset.tip = tip;
+    b.setAttribute('aria-label', tip);
     b.disabled = disabled;
     return b;
   }
 
+  // ---------- Sekmeler ----------
+
   function renderTabs() {
     tabsEl.replaceChildren();
-    const add = document.createElement('button');
-    add.type = 'button';
+    const add = document.createElement('div');
     add.className = `tab tab-add${addPending ? ' pending' : ''}`;
-    add.dataset.act = 'add';
-    add.innerHTML = icon.plus;
-    add.title = 'Yeni kategori ekle';
-    add.setAttribute('aria-label', 'Yeni kategori ekle');
+    add.append(iconButton('tab-act', 'add', icon.plus, 'Yeni kategori ekle'));
     tabsEl.append(add);
 
     const list = catalog.kategoriler;
@@ -57,11 +54,11 @@ export function initUrunler({ catalog, save }) {
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
         tab.append(
-          tabButton('left', icon.left, 'Sola taşı', { disabled: i === 0 }),
+          iconButton('tab-act', 'left', icon.left, 'Sola taşı', { disabled: i === 0 }),
           name,
-          tabButton('right', icon.right, 'Sağa taşı', { disabled: i === list.length - 1 }),
-          tabButton('edit', icon.edit, 'Adını düzenle'),
-          tabButton('del', icon.x, 'Kategoriyi sil'),
+          iconButton('tab-act', 'right', icon.right, 'Sağa taşı', { disabled: i === list.length - 1 }),
+          iconButton('tab-act', 'edit', icon.edit, 'Kategori adını düzenle'),
+          iconButton('tab-act', 'del', icon.x, 'Kategoriyi sil'),
         );
       } else {
         tab.tabIndex = 0;
@@ -84,6 +81,7 @@ export function initUrunler({ catalog, save }) {
       else if (k && act === 'del') deleteKategori(k);
       return;
     }
+    if (tab && tab.classList.contains('tab-add')) { addKategori(); return; }
     if (tab && tab.dataset.id && tab.dataset.id !== activeId) {
       activeId = tab.dataset.id;
       selUrun = null;
@@ -143,18 +141,6 @@ export function initUrunler({ catalog, save }) {
 
   // ---------- Ürünler tablosu ----------
 
-  function rowButton(act, html, label, { cls = '', disabled = false } = {}) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = `icon-btn ${cls}`.trim();
-    b.dataset.row = act;
-    b.innerHTML = html;
-    b.title = label;
-    b.setAttribute('aria-label', label);
-    b.disabled = disabled;
-    return b;
-  }
-
   function renderSira() {
     for (const b of siraEl.querySelectorAll('[data-sira]')) {
       const on = b.dataset.sira === sira;
@@ -167,6 +153,7 @@ export function initUrunler({ catalog, save }) {
     const k = activeKat();
     bodyEl.hidden = !k;
     emptyEl.hidden = !!k;
+    urunAdd.disabled = !k;
     if (!k) return;
     renderSira();
 
@@ -185,17 +172,19 @@ export function initUrunler({ catalog, save }) {
       tr.insertCell().textContent = u.ad;
       const td = tr.insertCell();
       td.className = 'act';
-      if (u.id === selUrun) {
-        tr.classList.add('selected');
-        // Taşıma yalnız kayıt sırasındayken ve yalnız aktif satırda
-        if (sira === 'kayit') {
-          td.append(
-            rowButton('up', icon.up, 'Yukarı taşı', { disabled: i === 0 }),
-            rowButton('down', icon.down, 'Aşağı taşı', { disabled: i === rows.length - 1 }),
-          );
-        }
+      if (u.id !== selUrun) return;
+      // Butonlar yalnız aktif satırda; taşıma yalnız kayıt sırasındayken
+      tr.classList.add('selected');
+      if (sira === 'kayit') {
+        td.append(
+          iconButton('icon-btn', 'up', icon.up, 'Yukarı taşı', { disabled: i === 0 }),
+          iconButton('icon-btn', 'down', icon.down, 'Aşağı taşı', { disabled: i === rows.length - 1 }),
+        );
       }
-      td.append(rowButton('del', icon.x, 'Ürünü sil', { cls: 'del' }));
+      td.append(
+        iconButton('icon-btn', 'edit', icon.edit, 'Ürünü düzenle'),
+        iconButton('icon-btn del', 'del', icon.x, 'Ürünü sil'),
+      );
     });
   }
 
@@ -215,17 +204,25 @@ export function initUrunler({ catalog, save }) {
     if (tr) tr.scrollIntoView({ block: 'nearest' });
   }
 
-  // Tıklama: seç; aynı satıra kısa sürede ikinci tıklama (çift tıklama / çift dokunma): düzenle.
+  function select(id) {
+    if (selUrun === id) return;
+    selUrun = id;
+    renderBody();
+  }
+
+  // Dokunma veya basılı tutma: satırı seç. Çift dokunma: düzenle.
   let last = { id: null, t: 0 };
   urunBody.addEventListener('click', (e) => {
     const tr = e.target.closest('tr[data-id]');
     if (!tr) return;
     const id = tr.dataset.id;
-    const btn = e.target.closest('[data-row]');
+    const btn = e.target.closest('[data-act]');
     if (btn) {
       last = { id: null, t: 0 };
-      if (btn.dataset.row === 'del') { select(id); deleteUrun(id); }
-      else moveUrun(id, btn.dataset.row === 'up' ? -1 : +1);
+      const act = btn.dataset.act;
+      if (act === 'del') deleteUrun(id);
+      else if (act === 'edit') editUrun(id);
+      else moveUrun(id, act === 'up' ? -1 : +1);
       return;
     }
     select(id);
@@ -234,21 +231,18 @@ export function initUrunler({ catalog, save }) {
     last = dbl ? { id: null, t: 0 } : { id, t: now };
     if (dbl) editUrun(id);
   });
-
-  function select(id) {
-    if (selUrun === id) return;
-    selUrun = id;
-    renderBody(); // taşıma butonları yalnız aktif satırda
-  }
+  onLongPress(urunBody, 'tr[data-id]', (tr) => select(tr.dataset.id));
 
   async function deleteUrun(id) {
     const k = activeKat();
     const u = C.findUrun(k, id);
-    if (!(await confirmDialog(`<b>${esc(u.ad)}</b> (${esc(k.ad)}) silinsin mi?`))) return;
-    C.deleteUrun(k, id);
+    if (!(await confirmDialog(`<b>${esc(u.ad)}</b> (${esc(k.ad)}) silinsin mi?<br><small>Silinen ürün arşive alınır.</small>`))) return;
+    C.deleteUrunToArsiv(k, id, arsiv);
     if (selUrun === id) selUrun = null;
     save();
+    saveArsiv();
     renderBody();
+    toast('Ürün silindi ve arşive alındı.');
   }
 
   async function editUrun(id = null) {
@@ -265,6 +259,8 @@ export function initUrunler({ catalog, save }) {
     selUrun = r.id;
     save();
     renderBody();
+    const tr = urunBody.querySelector(`tr[data-id="${CSS.escape(r.id)}"]`);
+    if (tr) tr.scrollIntoView({ block: 'nearest' });
   }
 
   urunAdd.addEventListener('click', () => editUrun());

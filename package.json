@@ -1,6 +1,6 @@
 {
   "name": "urunler",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,7 +13,9 @@
     "@capacitor/android": "^8.6.2",
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.6.2",
-    "@capacitor/preferences": "^8.0.1"
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.3"
   },
   "devDependencies": {
     "@capacitor/assets": "^4.0.0",

@@ -64,3 +64,34 @@ test('bozuk kayıt temizlenir', () => {
   assert.equal(cat.kategoriler[0].ad, 'Binek');
   assert.equal(cat.kategoriler[0].urunler.length, 1);
 });
+
+test('silinen ürün arşive alınır, yeniden eskiye sıralanır', () => {
+  const k = { id: 'k', ad: 'Binek', urunler: [] };
+  const arsiv = [];
+  const a = C.saveUrun(k, { ad: '60 Ah' }).id;
+  const b = C.saveUrun(k, { ad: '45 Ah' }).id;
+  C.deleteUrunToArsiv(k, a, arsiv, new Date(2026, 10, 1, 9, 5));
+  C.deleteUrunToArsiv(k, b, arsiv, new Date(2026, 10, 2, 10, 0));
+  assert.equal(k.urunler.length, 0);
+  assert.deepEqual(C.sortedArsiv(arsiv).map((x) => `${x.ad} (${x.kategori})`), ['45 Ah (Binek)', '60 Ah (Binek)']);
+  assert.equal(C.zamanYaz(arsiv[0].zaman), '01.11.2026 09:05');
+});
+
+test('dışa aktarılan satırlar içe aktarılınca aynı veri oluşur, tekrar aktarım bir şey eklemez', () => {
+  const cat = C.emptyCatalog();
+  const arsiv = [];
+  const k = C.findKategori(cat, C.addKategori(cat, 'Binek').id);
+  C.addKategori(cat, 'Boş Sekme');
+  for (const ad of ['Ccc', 'Aaa']) C.saveUrun(k, { ad });
+  C.deleteUrunToArsiv(k, C.saveUrun(k, { ad: 'Silinen' }).id, arsiv, new Date(2026, 10, 3, 8, 30));
+  const uRows = C.urunRows(cat);
+  const aRows = C.arsivRows(arsiv);
+
+  const cat2 = C.emptyCatalog();
+  const arsiv2 = [];
+  assert.deepEqual(C.importRows(cat2, arsiv2, uRows, aRows), { kategori: 2, urun: 2, arsiv: 1 });
+  assert.deepEqual(cat2.kategoriler.map((x) => x.ad), ['Binek', 'Boş Sekme']);
+  assert.deepEqual(cat2.kategoriler[0].urunler.map((u) => u.ad), ['Ccc', 'Aaa']); // kayıt sırası korunur
+  assert.equal(arsiv2[0].ad, 'Silinen');
+  assert.deepEqual(C.importRows(cat2, arsiv2, uRows, aRows), { kategori: 0, urun: 0, arsiv: 0 });
+});

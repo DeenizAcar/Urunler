@@ -129,6 +129,127 @@ export function alertDialog(msgHtml) {
   });
 }
 
+/** Uzun basma menüsü (x, y noktasında). items: [{ text, danger, fn }]; Vazgeç her zaman en altta. */
+export function popMenu(x, y, items) {
+  const bd = document.createElement('div');
+  bd.className = 'pop-backdrop';
+  bd.innerHTML = `<div class="popmenu" role="menu">${items.map((it, i) =>
+    `<button type="button" data-i="${i}" class="${it.danger ? 'danger' : ''}">${esc(it.text)}</button>`).join('')}
+    <button type="button" data-i="-1">Vazgeç</button></div>`;
+  document.getElementById('modal-root').append(bd);
+  const m = bd.firstElementChild;
+  const r = document.getElementById('app').getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(x - r.left, r.width - m.offsetWidth - 8)) + 'px';
+  m.style.top = Math.max(8, Math.min(y - r.top, r.height - m.offsetHeight - 8)) + 'px';
+  const entry = { el: m, close() { const i = stack.indexOf(entry); if (i >= 0) stack.splice(i, 1); bd.remove(); }, onBack: () => entry.close() };
+  stack.push(entry);
+  bd.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-i]');
+    if (b || e.target === bd) {
+      entry.close();
+      const it = b && items[+b.dataset.i];
+      if (it) it.fn();
+    }
+  });
+}
+
+let toastTimer = null;
+export function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+// ---------- İpucu: data-tip olan öğeye basılı tutunca (farede üzerine gelince) görünür ----------
+const LONG = 500;
+let tipTimer = null;
+let tipHide = null;
+let suppressClick = false;
+
+function showTip(el) {
+  const tip = document.getElementById('tip');
+  const text = el.dataset.tip;
+  if (!text || !el.isConnected) return;
+  tip.textContent = text;
+  tip.hidden = false;
+  const app = document.getElementById('app').getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  const w = tip.offsetWidth;
+  const h = tip.offsetHeight;
+  let top = r.top - app.top - h - 6;
+  if (top < 4) top = r.bottom - app.top + 6;
+  const left = Math.max(4, Math.min(r.left - app.left + r.width / 2 - w / 2, app.width - w - 4));
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+function hideTip(delay = 0) {
+  clearTimeout(tipHide);
+  tipHide = setTimeout(() => { document.getElementById('tip').hidden = true; }, delay);
+}
+
+/** Satırlarda uzun basma için ortak zamanlayıcı. onLong(e) basılı tutma süresi dolunca çağrılır. */
+export function onLongPress(root, selector, onLong) {
+  let t = null;
+  let sx = 0;
+  let sy = 0;
+  root.addEventListener('pointerdown', (e) => {
+    if (e.button) return;
+    const el = e.target.closest(selector);
+    if (!el || e.target.closest('[data-tip]')) return;
+    sx = e.clientX; sy = e.clientY;
+    clearTimeout(t);
+    t = setTimeout(() => {
+      suppressClick = true;
+      if (navigator.vibrate) navigator.vibrate(25);
+      onLong(el, sx, sy);
+    }, LONG);
+  });
+  root.addEventListener('pointermove', (e) => {
+    if (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10) clearTimeout(t);
+  });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) root.addEventListener(ev, () => clearTimeout(t));
+}
+
+let tipSx = 0;
+let tipSy = 0;
+document.addEventListener('pointerdown', (e) => {
+  suppressClick = false;
+  const el = e.target.closest('[data-tip]');
+  clearTimeout(tipTimer);
+  if (!el || e.button) return;
+  tipSx = e.clientX; tipSy = e.clientY;
+  tipTimer = setTimeout(() => { suppressClick = true; showTip(el); }, LONG);
+});
+document.addEventListener('pointermove', (e) => {
+  if (Math.abs(e.clientX - tipSx) > 10 || Math.abs(e.clientY - tipSy) > 10) clearTimeout(tipTimer);
+});
+for (const ev of ['pointerup', 'pointercancel']) {
+  document.addEventListener(ev, () => {
+    clearTimeout(tipTimer);
+    if (!suppressClick) return;
+    hideTip(1200);
+    setTimeout(() => { suppressClick = false; }, 60); // yalnız bu basmanın tıklaması yutulur
+  });
+}
+// Fare: üzerine gelince kısa süre sonra ipucu
+document.addEventListener('pointerover', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  const el = e.target.closest('[data-tip]');
+  if (!el) return;
+  clearTimeout(tipTimer);
+  tipTimer = setTimeout(() => showTip(el), 600);
+  el.addEventListener('pointerleave', () => { clearTimeout(tipTimer); hideTip(); }, { once: true });
+});
+// Basılı tutma bitince tıklama sayılmasın
+document.addEventListener('click', (e) => {
+  if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); }
+}, true);
+document.addEventListener('contextmenu', (e) => {
+  if (e.target.closest('[data-tip], .grid.sel tbody tr')) e.preventDefault();
+});
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && hasModal()) { e.preventDefault(); handleBack(); }
 });

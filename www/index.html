@@ -12,41 +12,81 @@
 <body>
 <div id="app">
 
+<!-- ======================= ÜRÜNLER ======================= -->
 <section id="screen-urun" class="screen">
-  <!-- Kaydırırken sabit kalan başlık: sayfa başlığı + kategori sekmeleri -->
-  <div class="sticky-head">
-    <div class="tanim-head">
-      <h1 class="tanim-title">ÜRÜNLER</h1>
-      <div class="tabs" id="tabs" role="tablist"></div>
-    </div>
-  </div>
+  <header class="page-head">
+    <span></span>
+    <h1 class="page-title">ÜRÜNLER</h1>
+    <button type="button" id="urun-add" class="btn primary" data-tip="Seçili sekmeye yeni ürün ekle">Ürün Ekle</button>
+  </header>
 
-  <main class="tanim">
-    <div class="tab-panel">
-      <p id="tab-empty" class="tab-empty">Henüz kategori yok. Yeni kategori eklemek için en baştaki <b>+</b> sekmesine dokunun.</p>
-      <div id="tab-body" hidden>
-        <div class="def-bar">
-          <span class="def-lbl">Ürünler</span>
-          <div class="seg" id="sirala" role="radiogroup" aria-label="Sıralama">
-            <button type="button" class="seg-btn" data-sira="kayit" role="radio">Kayıt Sırasına Göre</button>
-            <button type="button" class="seg-btn" data-sira="ad" role="radio">Ada Göre</button>
-          </div>
-          <span class="spacer"></span>
-          <button type="button" id="urun-add" class="btn primary">Ürün Ekle</button>
-        </div>
-        <div class="def-table">
-          <table class="grid sel def">
-            <thead><tr><th>Ürünler</th><th class="act"></th></tr></thead>
-            <tbody id="urun-body"></tbody>
-          </table>
-        </div>
-        <p class="hint">Bir ürünü düzenlemek için üzerine çift tıklayın (telefonda çift dokunun).</p>
-      </div>
+  <div class="tabs" id="tabs" role="tablist"></div>
+
+  <main class="tab-panel">
+    <p id="tab-empty" class="tab-empty">Henüz kategori yok. Yeni kategori eklemek için en baştaki <b>+</b> sekmesine dokunun.</p>
+    <div id="tab-body" class="def-table" hidden>
+      <table class="grid sel def">
+        <thead><tr>
+          <th>
+            <div class="th-flex">
+              <span>Ürünler</span>
+              <div class="seg" id="sirala" role="radiogroup" aria-label="Sıralama">
+                <button type="button" class="seg-btn" data-sira="kayit" role="radio" data-tip="Eklenme sırası; yukarı / aşağı taşınabilir">Kayıt Sırasına Göre</button>
+                <button type="button" class="seg-btn" data-sira="ad" role="radio" data-tip="Ada göre sıralı; taşıma yapılamaz">Ada Göre</button>
+              </div>
+            </div>
+          </th>
+          <th class="act"></th>
+        </tr></thead>
+        <tbody id="urun-body"></tbody>
+      </table>
     </div>
   </main>
+
+  <footer class="bottombar">
+    <div class="btngroup">
+      <button type="button" id="btn-disa" class="btn xlbtn" data-tip="Ürünleri ve arşivi Excel dosyasına aktar">
+        <svg class="xlicon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="15" height="18" rx="2" fill="#21a366"/><rect x="14.5" y="3" width="7.5" height="18" rx="2" fill="#33c481"/><path d="M14.5 7.5H22M14.5 12H22M14.5 16.5H22" stroke="#185c37" stroke-width=".8"/><rect x="2" y="6" width="12" height="12" rx="1.6" fill="#107c41"/><path d="M5 8.6h2l1 2 1-2h2l-2 3.4 2 3.4H9l-1-2-1 2H5l2-3.4z" fill="#fff"/></svg>Dışa Aktar</button>
+      <button type="button" id="btn-ice" class="btn xlbtn" data-tip="Excel dosyasından ürün ekle (var olanlar silinmez)">
+        <svg class="xlicon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="15" height="18" rx="2" fill="#21a366"/><rect x="14.5" y="3" width="7.5" height="18" rx="2" fill="#33c481"/><path d="M14.5 7.5H22M14.5 12H22M14.5 16.5H22" stroke="#185c37" stroke-width=".8"/><rect x="2" y="6" width="12" height="12" rx="1.6" fill="#107c41"/><path d="M5 8.6h2l1 2 1-2h2l-2 3.4 2 3.4H9l-1-2-1 2H5l2-3.4z" fill="#fff"/></svg>İçe Aktar</button>
+      <input id="inp-ice" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+    </div>
+    <button type="button" id="btn-arsiv" class="btn xlbtn ortabtn" data-tip="Silinen ürün arşivini aç">
+      <svg class="xlicon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="3" width="19" height="16" rx="2" fill="#5b6775"/><rect x="4.5" y="5" width="15" height="12" rx="1" fill="#8d99a6"/><circle cx="12" cy="11" r="3.6" fill="#e3e8ee" stroke="#3d4752" stroke-width="1"/><path d="M12 7.4v1.4M12 13.2v1.4M8.4 11h1.4M14.2 11h1.4" stroke="#3d4752" stroke-width="1"/><circle cx="12" cy="11" r="1" fill="#3d4752"/><rect x="17.2" y="8.5" width="1.3" height="5" rx=".6" fill="#3d4752"/><rect x="5" y="19" width="3" height="2" fill="#3d4752"/><rect x="16" y="19" width="3" height="2" fill="#3d4752"/></svg>Arşiv</button>
+    <button type="button" id="btn-kapat" class="btn" data-tip="Programı kapat">Kapat</button>
+  </footer>
+</section>
+
+<!-- ======================= SİLİNEN ÜRÜN ARŞİVİ ======================= -->
+<section id="screen-arsiv" class="screen" hidden>
+  <header class="page-head">
+    <span></span>
+    <h1 class="page-title">SİLİNEN ÜRÜN ARŞİVİ</h1>
+    <span></span>
+  </header>
+  <main class="tab-panel arsiv-panel">
+    <div class="def-table">
+      <table class="grid sel">
+        <thead><tr><th class="c-zaman">Silme Zamanı</th><th>Ürün</th></tr></thead>
+        <tbody id="arsiv-body"></tbody>
+      </table>
+    </div>
+  </main>
+  <footer class="bottombar">
+    <button type="button" id="btn-arsiv-tum" class="btn danger" data-tip="Arşivdeki bütün kayıtları sil">Tüm Arşiv Kayıtlarını Sil</button>
+    <button type="button" id="btn-arsiv-kapat" class="btn" data-tip="Ürünler ekranına dön">Kapat</button>
+  </footer>
+</section>
+
+<!-- Program kapatıldı (web) -->
+<section id="screen-kapali" class="screen kapali" hidden>
+  <p>Program kapatıldı.<br>Bu tarayıcı sekmesini kapatabilirsiniz.</p>
+  <button type="button" id="btn-yeniden" class="btn primary">Yeniden Aç</button>
 </section>
 
 <div id="modal-root"></div>
+<div id="tip" class="tip" hidden></div>
+<div id="toast" class="toast" hidden></div>
 </div>
 
 <script type="module" src="js/main.js"></script>

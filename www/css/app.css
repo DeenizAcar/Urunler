@@ -8,8 +8,7 @@
   --muted: #6b7785;
   --accent: #1e6fd9;
   --red: #d63a31;
-  --sel: #ffb300;
-  --sel-bg: #fff6d6;
+  --sel-bg: #fff3c4;
   --sa-t: env(safe-area-inset-top, 0px);
   --sa-r: env(safe-area-inset-right, 0px);
   --sa-b: env(safe-area-inset-bottom, 0px);
@@ -30,21 +29,25 @@ html, body {
 }
 
 #app { position: fixed; inset: 0; overflow: hidden; background: var(--bg); container: app / size; }
+
+/* Ekran kaymaz: başlık, sekmeler ve alt panel sabit; yalnız tablo kendi içinde kayar */
 .screen {
   position: absolute;
   inset: 0;
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--sa-t) var(--sa-r) 0 var(--sa-l);
 }
 button { font: inherit; }
 [hidden] { display: none !important; }
 .ico { width: 16px; height: 16px; display: block; margin: auto; }
+button, .tab, .grid.sel { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 
 /* ---------- Genel butonlar ---------- */
 .btn {
   height: 36px;
-  padding: 0 16px;
+  padding: 0 14px;
   border-radius: 7px;
   border: 1px solid var(--line);
   background: #fff;
@@ -57,37 +60,27 @@ button { font: inherit; }
 .btn.danger { background: var(--red); border-color: var(--red); color: #fff; }
 .btn:disabled { opacity: .45; cursor: default; }
 .btn:not(:disabled):active { filter: brightness(.88); }
+.xlbtn { display: inline-flex; align-items: center; gap: 6px; }
+.xlicon { width: 20px; height: 20px; flex: none; }
 
-/* ---------- Sabit başlık: sayfa başlığı + sekmeler ---------- */
-.sticky-head {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--bg);
-  padding-top: var(--sa-t);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .06);
+/* ---------- Sayfa başlığı: ortada başlık, en sağda Ürün Ekle ---------- */
+.page-head {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
 }
-.tanim-head { max-width: 900px; margin: 0 auto; padding: 0 calc(12px + var(--sa-r)) 0 calc(12px + var(--sa-l)); }
-.tanim-title {
-  margin: 10px 0;
-  font-size: 18px;
-  letter-spacing: .6px;
-  color: var(--navy);
-  text-align: center;
-}
-main.tanim {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 calc(12px + var(--sa-r)) calc(16px + var(--sa-b)) calc(12px + var(--sa-l));
-}
+.page-head > :last-child { justify-self: end; }
+.page-title { margin: 0; font-size: 18px; letter-spacing: .6px; color: var(--navy); text-align: center; white-space: nowrap; }
 
 /* ---------- Sekmeler: + her zaman en başta; başlıklar dar, simgeler bitişik ---------- */
-.tabs { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 3px; padding: 0 6px; }
+.tabs { flex: none; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 3px; padding: 0 18px; }
 .tab {
   display: flex;
   align-items: center;
-  gap: 0;
-  height: 30px;
+  height: 28px;
   padding: 0 12px;
   border: 1px solid var(--line);
   border-bottom: 0;
@@ -110,41 +103,44 @@ main.tanim {
   z-index: 1;
 }
 .tab.active .tab-name { font-weight: 700; color: var(--navy); }
-.tab-add { color: var(--icon); padding: 0 10px; background: #fff; }
-.tab-add .ico { width: 18px; height: 18px; }
+.tab-add { padding: 0 5px; background: #fff; }
 .tab-add.pending { border-color: #9cc0ef; z-index: 1; }
 .tab-act {
-  width: 22px;
-  height: 24px;
+  width: 12px;
+  height: 22px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 4px;
   background: transparent;
   color: var(--icon);
   cursor: pointer;
   padding: 0;
   flex: none;
 }
-.tab-act .ico { width: 15px; height: 15px; }
+.tab-act .ico { width: 12px; height: 12px; }
 .tab-act:hover:not(:disabled) { background: rgba(0, 0, 0, .08); }
 .tab-act:disabled { opacity: .25; cursor: default; }
 
 .tab-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0 12px 10px;
   background: #fff;
   border: 1px solid #9cc0ef;
   border-radius: 10px;
-  padding: 12px;
+  padding: 10px;
 }
+.arsiv-panel { border-color: var(--line); }
 .tab-empty { margin: 30px 10px; text-align: center; color: var(--muted); font-size: 15px; }
-.def-bar { display: flex; align-items: center; gap: 10px; min-height: 36px; margin-bottom: 8px; }
-.def-lbl { flex: 1; min-width: 0; font-weight: 700; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .def-table {
-  height: max(220px, calc(100cqh - 190px));
+  flex: 1;
+  min-height: 0;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 6px;
   -webkit-overflow-scrolling: touch;
 }
-.hint { margin: 10px 2px 0; color: var(--muted); font-size: 12.5px; }
 
 /* ---------- Tablo ---------- */
 table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
@@ -157,59 +153,73 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
   font-size: 12.5px;
   font-weight: 600;
   text-align: left;
-  padding: 7px 8px;
+  padding: 5px 8px;
   white-space: nowrap;
 }
-.grid td { height: 36px; padding: 0 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.grid td.empty { height: 64px; color: var(--muted); text-align: center; white-space: normal; }
-.grid.sel { -webkit-user-select: none; user-select: none; }
+.grid td { height: 30px; padding: 0 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.grid td.empty { height: 60px; color: var(--muted); text-align: center; white-space: normal; }
 .grid.sel tbody tr[data-id] { cursor: pointer; }
 .grid.sel tbody tr[data-id]:hover td { background: #f3f7fc; }
 .grid.sel tr.selected td,
-.grid.sel tr.selected:hover td {
-  background: var(--sel-bg);
-  box-shadow: inset 0 2px 0 var(--sel), inset 0 -2px 0 var(--sel);
-  font-weight: 700;
-}
-.grid.def th.act, .grid.def td.act { width: 104px; padding: 0 4px; text-align: right; white-space: nowrap; }
-.grid.def td.act .icon-btn { vertical-align: middle; }
+.grid.sel tr.selected:hover td { background: var(--sel-bg); font-weight: 700; }
+.grid.def th.act, .grid.def td.act { width: 100px; padding: 0 4px; text-align: right; }
+.c-zaman { width: 140px; }
+.kat { font-weight: 400; font-style: italic; color: #4a5562; }
 
-/* Sıralama seçimi: Kayıt Sırasına Göre / Ada Göre */
-.spacer { flex: 1; }
-.def-lbl { flex: none; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; flex: none; }
+/* Tablo başlığında sıralama seçimi */
+.th-flex { display: flex; align-items: center; gap: 10px; }
+.seg { display: inline-flex; border: 1px solid rgba(255, 255, 255, .35); border-radius: 6px; overflow: hidden; flex: none; }
 .seg-btn {
-  height: 30px;
-  padding: 0 10px;
+  height: 22px;
+  padding: 0 8px;
   border: 0;
-  background: #fff;
-  color: var(--text);
-  font-size: 12.5px;
+  background: transparent;
+  color: #dbe4ee;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
-.seg-btn + .seg-btn { border-left: 1px solid var(--line); }
-.seg-btn.on { background: #d4e6fb; color: var(--navy); font-weight: 700; }
+.seg-btn + .seg-btn { border-left: 1px solid rgba(255, 255, 255, .35); }
+.seg-btn.on { background: #fff; color: var(--navy); font-weight: 700; }
 
-/* Tablodaki silme: yalnız simge kırmızı */
+/* Satır simgeleri: yalnız aktif satırda, bitişik; silme kırmızı, diğerleri siyah */
 .icon-btn {
-  width: 32px;
-  height: 28px;
+  width: 24px;
+  height: 26px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 5px;
   background: transparent;
   color: var(--icon);
   cursor: pointer;
   padding: 0;
+  vertical-align: middle;
 }
+.icon-btn .ico { width: 15px; height: 15px; }
 .icon-btn.del { color: var(--red); }
 .icon-btn:hover:not(:disabled) { background: rgba(0, 0, 0, .08); }
-.icon-btn.del:hover { background: rgba(214, 58, 49, .1); }
+.icon-btn.del:hover { background: rgba(214, 58, 49, .12); }
 .icon-btn:disabled { opacity: .25; cursor: default; }
-.icon-btn:active { filter: brightness(.85); }
+.icon-btn:not(:disabled):active { filter: brightness(.85); }
 
-/* ======================= Küçük pencereler ======================= */
+/* ---------- Alt panel ---------- */
+.bottombar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px calc(8px + var(--sa-b));
+  border-top: 1px solid var(--line);
+  background: #f4f7fa;
+}
+.btngroup { display: flex; gap: 8px; }
+.ortabtn { margin: 0 auto; }
+
+/* Program kapatıldı (web) */
+.kapali { align-items: center; justify-content: center; gap: 16px; text-align: center; color: var(--muted); font-size: 16px; }
+
+/* ======================= Küçük pencereler, menü, ipucu, bildirim ======================= */
 #modal-root { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
 .modal-backdrop {
   position: absolute;
@@ -233,6 +243,7 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
 .modal h3 { margin: 0 0 4px; font-size: 17px; color: var(--navy); }
 .modal-sub { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
 .modal .msg { font-size: 15px; line-height: 1.45; padding: 2px 0 4px; }
+.modal .msg small { color: var(--muted); font-size: 13px; }
 .fld { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
 .fld input {
   height: 42px;
@@ -249,10 +260,65 @@ table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-siz
 .modal-actions { display: flex; justify-content: flex-start; gap: 10px; margin-top: 16px; }
 .modal-actions .btn { height: 42px; min-width: 100px; font-size: 15px; }
 
+.pop-backdrop { position: absolute; inset: 0; pointer-events: auto; }
+.popmenu {
+  position: absolute;
+  min-width: 160px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .3);
+  overflow: hidden;
+}
+.popmenu button { display: block; width: 100%; text-align: left; border: 0; background: #fff; padding: 12px 16px; font-size: 15px; cursor: pointer; }
+.popmenu button + button { border-top: 1px solid var(--line); }
+.popmenu button.danger { color: var(--red); font-weight: 600; }
+.popmenu button:active { background: #eef3f8; }
+
+.tip {
+  position: absolute;
+  z-index: 80;
+  max-width: 240px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #222;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .25);
+}
+.toast {
+  position: absolute;
+  z-index: 90;
+  left: 50%;
+  bottom: calc(70px + var(--sa-b));
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: rgba(20, 28, 38, .92);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ---------- Dar ekran ---------- */
 @container app (max-width: 640px) {
-  .tanim-title { font-size: 16px; }
-  .def-bar { flex-wrap: wrap; gap: 6px 10px; }
-  .seg { order: 3; width: 100%; }
-  .seg-btn { flex: 1; }
-  .tanim-head, main.tanim { padding-left: calc(8px + var(--sa-l)); padding-right: calc(8px + var(--sa-r)); }
+  .page-title { font-size: 16px; }
+  .page-head { padding: 6px 8px; }
+  .tabs { padding: 0 12px; }
+  .tab-panel { margin: 0 6px 6px; padding: 6px; }
+  .bottombar { padding-left: 6px; padding-right: 6px; gap: 5px; }
+  .bottombar .btn { padding: 0 7px; font-size: 13px; }
+  .btngroup { gap: 5px; }
+  .xlbtn { gap: 4px; }
+  .xlicon { width: 16px; height: 16px; }
+  .c-zaman { width: 118px; }
+}
+@container app (max-width: 470px) {
+  .th-flex { gap: 6px; }
+  .seg-btn { padding: 0 5px; font-size: 11px; }
+  .page-head { grid-template-columns: 0 auto 1fr; }
+  .page-title { text-align: left; }
 }

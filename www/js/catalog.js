@@ -127,3 +127,85 @@ export function deleteUrun(k, id) {
   k.urunler = k.urunler.filter((u) => u.id !== id);
   return { id };
 }
+
+// ---------- Silinen ürün arşivi ----------
+// arsiv = [ { id, zaman (ISO), ad, kategori } ]
+
+export function normalizeArsiv(raw) {
+  return (Array.isArray(raw) ? raw : []).filter((a) => a && a.ad && a.zaman).map((a) => ({
+    id: String(a.id || newId()),
+    zaman: String(a.zaman),
+    ad: cleanText(a.ad),
+    kategori: cleanText(a.kategori),
+  }));
+}
+
+/** Ürünü siler ve arşive ekler. */
+export function deleteUrunToArsiv(k, id, arsiv, zaman = new Date()) {
+  const u = findUrun(k, id);
+  if (!u) return { error: 'Ürün bulunamadı.' };
+  deleteUrun(k, id);
+  arsiv.push({ id: newId(), zaman: zaman.toISOString(), ad: u.ad, kategori: k.ad });
+  return { id };
+}
+
+/** Arşiv yeniden eskiye. */
+export const sortedArsiv = (arsiv) => [...arsiv].sort((a, b) => (a.zaman < b.zaman ? 1 : a.zaman > b.zaman ? -1 : 0));
+
+// ---------- Excel satırları (dışa / içe aktar) ----------
+
+const pad = (n) => String(n).padStart(2, '0');
+export const zamanYaz = (iso) => {
+  const d = new Date(iso);
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+function zamanCoz(v) {
+  if (v instanceof Date) return isNaN(v) ? null : v;
+  const m = String(v ?? '').trim().match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+  return m ? new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)) : null;
+}
+/** Başlık adını büyük/küçük harf ve boşluk farkı gözetmeden bulur. */
+function hucre(row, adlar) {
+  for (const k of Object.keys(row)) {
+    if (adlar.includes(cleanText(k).toLocaleLowerCase('tr-TR'))) return row[k];
+  }
+  return undefined;
+}
+
+/** Ürünler sayfası: sekme sırası ve kayıt sırasıyla. */
+export const urunRows = (cat) =>
+  cat.kategoriler.flatMap((k) => (k.urunler.length ? k.urunler : [null]).map((u) => ({ Kategori: k.ad, 'Ürün': u ? u.ad : '' })));
+
+export const arsivRows = (arsiv) =>
+  sortedArsiv(arsiv).map((a) => ({ 'Silme Zamanı': zamanYaz(a.zaman), 'Ürün': a.ad, Kategori: a.kategori, 'Kayıt No': a.id }));
+
+/**
+ * Excel satırlarını ekler; var olanlar (aynı kategori / aynı ürün / aynı arşiv kaydı) atlanır, hiçbir şey silinmez.
+ * Sayıları döner: { kategori, urun, arsiv }.
+ */
+export function importRows(cat, arsiv, uRows = [], aRows = []) {
+  const n = { kategori: 0, urun: 0, arsiv: 0 };
+  for (const row of uRows) {
+    const kAd = cleanText(hucre(row, ['kategori', 'sekme']));
+    const uAd = cleanText(hucre(row, ['ürün', 'ürünler', 'urun']));
+    if (!kAd) continue;
+    let k = cat.kategoriler.find((x) => same(x.ad, kAd));
+    if (!k) {
+      const r = addKategori(cat, kAd);
+      if (r.error) continue;
+      k = findKategori(cat, r.id);
+      n.kategori++;
+    }
+    if (uAd && !saveUrun(k, { ad: uAd }).error) n.urun++;
+  }
+  for (const row of aRows) {
+    const z = zamanCoz(hucre(row, ['silme zamanı']));
+    const ad = cleanText(hucre(row, ['ürün', 'urun']));
+    if (!z || !ad) continue;
+    const id = cleanText(hucre(row, ['kayıt no'])) || 'x' + z.getTime().toString(36) + ad.length;
+    if (arsiv.some((a) => a.id === id)) continue;
+    arsiv.push({ id, zaman: z.toISOString(), ad, kategori: cleanText(hucre(row, ['kategori'])) });
+    n.arsiv++;
+  }
+  return n;
+}
